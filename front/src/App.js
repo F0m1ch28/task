@@ -23,6 +23,10 @@ const App = () => {
     }
   };
 
+  const formatNumber = (number) => {
+    return number.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3');
+  };
+
   return (
     <div className="App">
       <form onSubmit={handleSubmit}>
@@ -49,6 +53,7 @@ const App = () => {
         </button>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}
+
       {searchResults.length > 0 && (
         <div>
           <h2>Результаты поиска:</h2>
@@ -56,7 +61,7 @@ const App = () => {
             {searchResults.map((result, index) => (
               <li key={index}>
                 <p>Email: {result.email}</p>
-                <p>Number: {result.number}</p>
+                <p>Number: {formatNumber(result.number)}</p>
               </li>
             ))}
           </ul>
