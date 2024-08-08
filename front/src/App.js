@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import InputMask from 'react-input-mask';
 
@@ -8,16 +8,40 @@ const App = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const abortControllerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    abortControllerRef.current = new AbortController();
+
     try {
-      const response = await axios.post('http://localhost:5000/search', { email, number });
+      const response = await axios.post(
+        'http://localhost:5000/search',
+        { email, number },
+        { signal: abortControllerRef.current.signal }
+      );
       setSearchResults(response.data);
     } catch (err) {
-      setError('Ошибка при поиске. Пожалуйста, попробуйте еще раз.');
+      if (axios.isCancel(err)) {
+        console.log('Запрос отменен:', err.message);
+      } else {
+        setError('Ошибка при поиске. Пожалуйста, попробуйте еще раз.');
+      }
     } finally {
       setLoading(false);
     }

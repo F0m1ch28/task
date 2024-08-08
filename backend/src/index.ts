@@ -23,8 +23,6 @@ const data: User[] = [
   { email: 'jill@gmail.com', number: '822286' }
 ];
 
-let currentRequest: NodeJS.Timeout | null = null;
-
 app.get('/', (req: Request, res: Response) => {
   res.send('Сервер работает.');
 });
@@ -37,19 +35,15 @@ app.post('/search', async (req: Request, res: Response) => {
     return;
   }
 
-  if (currentRequest) {
-    clearTimeout(currentRequest);
-  }
+  const formattedNumber = number ? number.replace(/-/g, '') : '';
+  const results = data.filter(item =>
+    item.email.toLowerCase().includes(email.toLowerCase()) &&
+    (!formattedNumber || item.number === formattedNumber)
+  );
 
-  currentRequest = setTimeout(() => {
-    const formattedNumber = number ? number.replace(/-/g, '') : '';
-    const results = data.filter(item =>
-      item.email.toLowerCase().includes(email.toLowerCase()) &&
-      (!formattedNumber || item.number === formattedNumber)
-    );
-    currentRequest = null;
+  setTimeout(() => {
     res.json(results);
-  }, 5000);
+  }, 500);
 });
 
 app.listen(PORT, () => {
